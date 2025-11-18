@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title> Mini Store </title>
+<style>
+:root{
+  --bg:#f6f7fb; --card:#fff; --accent:#0f1724; --muted:#666; --primary:#0b74d1;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:#111;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+/* header */
+.header{background:var(--accent);color:white;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:18px}
+.navlinks{display:flex;gap:8px;align-items:center}
+.btn{background:#111;color:#fff;border:none;padding:8px 10px;border-radius:6px;cursor:pointer}
+.search{padding:8px;border-radius:8px;border:1px solid #ddd;width:220px}
+.container{width:95%;max-width:1100px;margin:18px auto}
+.row{display:flex;gap:12px;align-items:center}
+/* hero */
+.hero{display:flex;gap:20px;align-items:center;background:linear-gradient(90deg,#ffffff 0%, #f0f6ff 100%);padding:22px;border-radius:12px;margin-top:18px}
+.hero .left{flex:1}
+.hero .right{flex:1;text-align:center}
+.hero img{max-width:260px}
+/* category sections */
+.category { margin-top:20px; }
+.category h3 { margin: 6px 0 10px; }
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.card{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(16,24,40,0.06);text-align:center}
+.card img{width:120px;height:120px;object-fit:contain;margin:6px auto;display:block;background:#fff;padding:6px;border-radius:6px}
+.card h4{font-size:15px;margin:6px 0}
+.price{font-weight:700;margin-top:6px}
+.card button{margin-top:8px;background:var(--primary);color:white;border:none;padding:8px 10px;border-radius:7px;cursor:pointer}
+/* sections (multi-page in one file) */
+.section{display:none;padding:18px}
+.section.active{display:block}
+/* cart page */
+.table{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 6px 18px rgba(16,24,40,0.06)}
+.cart-item{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #f0f0f0}
+.cart-item img{width:80px;height:80px;object-fit:contain}
+.qty-controls{display:flex;align-items:center;gap:8px}
+.smallbtn{background:#efefef;border:none;padding:6px 8px;border-radius:6px;cursor:pointer}
+.checkout-card{background:var(--card);padding:16px;border-radius:10px;box-shadow:0 6px 18px rgba(16,24,40,0.06)}
+.total-row{font-weight:800;text-align:right;margin-top:12px}
+/* form */
+input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid #e3e3e3;margin-top:10px}
+textarea{min-height:100px;resize:vertical}
+.success{text-align:center;padding:36px}
+/* responsive */
+@media (max-width:720px){
+  .hero{flex-direction:column;text-align:center}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+  .search{width:140px}
+  .cart-item{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="brand">Mini Store</div>
+  </div>
+  <div class="navlinks">
+    <a class="btn" href="#" onclick="navTo('home')">Home</a>
+    <a class="btn" href="#" onclick="navTo('products')">Products</a>
+    <a class="btn" href="#" onclick="navTo('cartPage')">Cart</a>
+    <input id="headerSearch" class="search" placeholder="Search products..." />
+    <div style="position:relative">
+      <button class="btn" onclick="navTo('cartPage')">🛒 Cart</button>
+      <span id="cartCount" style="position:absolute;top:-8px;right:-8px;background:#ff3b30;color:#fff;border-radius:50%;padding:3px 7px;display:none;font-size:12px">0</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- HOME -->
+<section id="home" class="section active">
+  <div class="hero">
+    <div class="left">
+      <h1>Mini Store</h1>
+      <p style="color:var(--muted)">Category-style store: Mobiles, Makeup, Laptops, Watches, Shoes — everything on one page grouped by category.</p>
+      <div style="margin-top:12px"><button class="btn" onclick="navTo('products')">Browse Products</button></div>
+    </div>
+    <div class="right"><img src="https://m.media-amazon.com/images/I/81Zt42ioCgL._SL1500_.jpg" alt="hero"></div>
+  </div>
+
+  <h3 style="margin-top:18px">Featured</h3>
+  <div id="featuredGrid" class="grid"></div>
+</section>
+
+<!-- PRODUCTS -->
+<section id="products" class="section">
+  <div class="category" id="cat-mobiles"><h3>Mobiles</h3><div id="mobilesGrid" class="grid"></div></div>
+  <div class="category" id="cat-makeup"><h3>Makeup</h3><div id="makeupGrid" class="grid"></div></div>
+  <div class="category" id="cat-laptops"><h3>Laptops</h3><div id="laptopsGrid" class="grid"></div></div>
+  <div class="category" id="cat-watches"><h3>Watches</h3><div id="watchesGrid" class="grid"></div></div>
+  <div class="category" id="cat-shoes"><h3>Shoes</h3><div id="shoesGrid" class="grid"></div></div>
+</section>
+
+<!-- CART -->
+<section id="cartPage" class="section">
+  <h2>Your Cart</h2>
+  <div id="cartBox" class="table"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;flex-wrap:wrap">
+    <div></div>
+    <div style="width:320px;min-width:220px;margin-top:12px">
+      <div class="checkout-card">
+        <div>Subtotal: ₹ <span id="subtotal">0</span></div>
+        <div class="total-row">Total: ₹ <span id="totalGrand">0</span></div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn" onclick="navTo('products')">Continue Shopping</button>
+          <button class="btn" style="background:#16a34a" onclick="proceedToCheckout()">Proceed to Checkout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHECKOUT -->
+<section id="checkoutPage" class="section">
+  <h2>Checkout</h2>
+  <div style="display:grid;grid-template-columns:1fr 360px;gap:18px">
+    <div>
+      <form id="checkoutForm">
+        <label>Full name</label><input id="fullname" type="text" required>
+        <label>Phone</label><input id="phone" type="tel" required>
+        <label>Address</label><textarea id="address" required></textarea>
+        <label>Payment method</label>
+        <select id="payment"><option>Cash on Delivery</option><option>UPI/Netbanking</option></select>
+        <div style="margin-top:12px">
+          <button type="button" class="btn" onclick="navTo('cartPage')">Back</button>
+          <button type="submit" class="btn" style="background:#16a34a">Place Order</button>
+        </div>
+      </form>
+    </div>
+    <div class="checkout-card">
+      <h4>Order Summary</h4>
+      <div id="orderItems"></div>
+      <div style="margin-top:8px">Subtotal: ₹ <span id="co_subtotal">0</span></div>
+      <div class="total-row">Total: ₹ <span id="co_total">0</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SUCCESS -->
+<section id="successPage" class="section">
+  <div style="background:#fff;padding:18px;border-radius:10px;box-shadow:0 6px 18px rgba(16,24,40,0.06)">
+    <div class="success">
+      <h2>🎉 Order Placed Successfully!</h2>
+      <p id="orderSummary">Loading…</p>
+      <div style="margin-top:12px"><button class="btn" onclick="navTo('products')">Back to Shop</button></div>
+    </div>
+  </div>
+</section>
+
+<div style="text-align:center;color:var(--muted);margin-top:18px">Built by Anbarasu</div>
+</div>
+
+<script>
+// ----- DATA -----
+const IMAGES = {
+1:'https://media-ik.croma.com/prod/https://media.tatacroma.com/Croma%20Assets/Communication/Mobiles/Images/303851_qewrkn.png',
+2:'https://vasavicommunications.com/wp-content/uploads/2023/05/71kfHC4ANJL._SL1500_-1.jpg',
+3:'https://m.media-amazon.com/images/I/81SigpJN1KL._AC_UF1000,1000_QL80_.jpg',
+4:'https://rukminim2.flixcart.com/image/480/640/xif0q/mobile/3/5/l/-original-imaghx9qmgqsk9s4.jpeg?q=90',
+5:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3KD7FyXXzOayTdbtOiMwhD25Vk5z9Oz4RQQ&s',
+6:'https://m.media-amazon.com/images/I/71VW8LmqqPL._AC_UF350,350_QL50_.jpg',
+7:'https://m.media-amazon.com/images/I/610rGG8jMsL.jpg',
+8:'https://m.media-amazon.com/images/I/71r0349s3cL.jpg',
+9:'https://www.jiomart.com/images/product/original/493838345/moto-edge-40-5g-256-gb-8-gb-viva-magenta-mobile-phone-digital-o493838345-p602933391-0-202307050531.jpeg?im=Resize=(420,420)',
+10:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1P-NYbtkeZkkCA0vLM57ik1IvtUC2LezQbw&s',
+11:'https://www.reneecosmetics.in/cdn/shop/files/8906121645484_1_d2edfac4-5a70-4138-9e09-2274b3909ed0.jpg?v=1742483468&width=1946',
+12:'https://maliao.in/cdn/shop/files/M147_PG1_SHD2.jpg?v=1745910522',
+13:'https://images-static.nykaa.com/media/catalog/product/8/7/870bb56INSAC00000277_9.jpg?tr=w-500',
+14:'https://delilahcosmetics.com/cdn/shop/files/Colour_Blush_Compact_Powder_Blusher_Clementine_Open_Award.jpg?v=1726829378',
+15:'https://swissbeauty.in/cdn/shop/files/ES01_FOP_BOP_1_14728c43-6a32-49ed-98ec-4fe73ccd38c4.jpg?v=1756106815',
+16:'https://m.media-amazon.com/images/I/71LiAv1ZnVL._AC_UF1000,1000_QL80_.jpg',
+17:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRIfPuJLXi2Ela6sHu7_z5ZnoDC45mSlLzknw&s',
+18:'https://www.paccosmetics.com/cdn/shop/files/8904341205136_img.other3.jpg?v=1747225645&width=1500',
+19:'https://cdn.fynd.com/v2/falling-surf-7c8bb8/fyprod/wrkr/products/pictures/item/free/original/000000000494448274/Mf-AVZGnr-000000000494448274_1.jpg',
+20:'https://m.media-amazon.com/images/I/51+sn8fCMvL._AC_UF1000,1000_QL80_.jpg',
+21:'https://images-cdn.ubuy.co.in/633b7069303a9660a52ecf19-dell-xps-13-9310-touchscreen-laptop-13-4.jpg',
+22:'https://techcrunch.com/wp-content/uploads/2022/07/CMC_1580.jpg',
+23:'https://doiqgxrhp4iii.cloudfront.net/15-DK0263TX_9_11zon.jpg',
+24:'https://p3-ofp.static.pub//fes/cms/2024/12/26/a95m3ujigs7g89r8dy8u6tuk4bawdc795866.png',
+25:'https://www.asus.com/media/Odin/Websites/global/Series/30.png',
+26:'https://cdsassets.apple.com/live/7WUAS350/images/tech-specs/apple-watch-series-9.png',
+27:'https://images.samsung.com/in/galaxy-watch5/feature/galaxy-watch5-performance-right-visual-mo.jpg',
+28:'https://m.media-amazon.com/images/I/7168FPOetGL.jpg',
+29:'https://www.titan.co.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw48069395/images/Titan/Catalog/90198SM01_2.jpg?sw=600&sh=600',
+30:'https://static.nike.com/a/images/t_web_pdp_936_v2/f_auto/34604cb1-acc6-4a40-bf26-60185ca7da5c/NIKE+AIR+MAX+1+ESS.png',
+31:'https://assets.adidas.com/images/w_600,f_auto,q_auto/dc208fe50e854573bbec5bb804c81712_faec/Ultrarun_5_Running_Shoes_Black_IE8794_db01_standard.jpg',
+32:'https://assets.ajio.com/medias/sys_master/root/ha4/h88/15417877004318/-473Wx593H-460569516-black-MODEL.jpg',
+33:'https://5.imimg.com/data5/IOS/Default/2022/6/KJ/EH/EI/135032960/product-jpeg-500x500.png'
+};
+const PLACEHOLDER='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="%23ffffff"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23bbbbbb" font-size="18">Image<br>Here</text></svg>';
+
+const PRODUCTS=[
+{id:1,category:'Mobiles',name:'Samsung Galaxy S24',price:79999},
+{id:2,category:'Mobiles',name:'Samsung Galaxy A54',price:28999},
+{id:3,category:'Mobiles',name:'iPhone 15 Pro',price:134999},
+{id:4,category:'Mobiles',name:'iPhone 14',price:58999},
+{id:5,category:'Mobiles',name:'OnePlus 12',price:74999},
+{id:6,category:'Mobiles',name:'Xiaomi Redmi Note 13',price:17999},
+{id:7,category:'Mobiles',name:'Realme 12',price:15999},
+{id:8,category:'Mobiles',name:'Google Pixel 8',price:69999},
+{id:9,category:'Mobiles',name:'Motorola Edge 40',price:34999},
+{id:10,category:'Mobiles',name:'Vivo V29',price:24999},
+{id:11,category:'Makeup',name:'Matte Lipstick - Red',price:499},
+{id:12,category:'Makeup',name:'Liquid Foundation',price:799},
+{id:13,category:'Makeup',name:'Mascara Pro',price:399},
+{id:14,category:'Makeup',name:'Blush Compact',price:349},
+{id:15,category:'Makeup',name:'Eyeshadow Palette',price:999},
+{id:16,category:'Makeup',name:'Makeup Brush Set',price:599},
+{id:17,category:'Makeup',name:'Highlighter Stick',price:299},
+{id:18,category:'Makeup',name:'Setting Spray',price:249},
+{id:19,category:'Makeup',name:'Concealer',price:329},
+{id:20,category:'Makeup',name:'Compact Powder',price:279},
+{id:21,category:'Laptops',name:'Dell XPS 13',price:119999},
+{id:22,category:'Laptops',name:'MacBook Air M2',price:119900},
+{id:23,category:'Laptops',name:'HP Pavilion',price:64999},
+{id:24,category:'Laptops',name:'Lenovo ThinkPad',price:89999},
+{id:25,category:'Laptops',name:'Asus ROG (gaming)',price:149999},
+{id:26,category:'Watches',name:'Apple Watch Series 9',price:39999},
+{id:27,category:'Watches',name:'Samsung Galaxy Watch',price:19999},
+{id:28,category:'Watches',name:'Fossil Gen 6',price:12999},
+{id:29,category:'Watches',name:'Titan Classic',price:5999},
+{id:30,category:'Shoes',name:'Nike Air Max',price:8999},
+{id:31,category:'Shoes',name:'Adidas Running',price:7999},
+{id:32,category:'Shoes',name:'Puma Casuals',price:2999},
+{id:33,category:'Shoes',name:'Reebok Sports',price:3499}
+];
+
+// ----- CART / STORAGE -----
+const CART_KEY='anbu_store_cart_v1';
+const ORDER_KEY='anbu_store_last_order';
+function getCart(){try{const s=localStorage.getItem(CART_KEY);return s?JSON.parse(s):[]}catch(e){return[]}}
+
+function saveCart(cart){localStorage.setItem(CART_KEY,JSON.stringify(cart))}
+function addToCart(id){let cart=getCart();let found=cart.find(c=>c.id===id);if(found){found.qty+=1}else{cart.push({id:id,qty:1})}saveCart(cart);updateHeaderCount();alert('Added to cart!')}
+function removeFromCart(id){let cart=getCart();cart=cart.filter(c=>c.id!==id);saveCart(cart);renderCart()}
+function changeQty(id,delta){let cart=getCart();let item=cart.find(c=>c.id===id);if(item){item.qty+=delta;if(item.qty<1) item.qty=1}saveCart(cart);renderCart()}
+function updateHeaderCount(){const cart=getCart();const c=cart.reduce((a,b)=>a+b.qty,0);const el=document.getElementById('cartCount');if(c>0){el.style.display='inline';el.innerText=c}else{el.style.display='none'}}
+
+// ----- NAVIGATION -----
+function navTo(section){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById(section).classList.add('active');if(section==='cartPage') renderCart();if(section==='checkoutPage') renderCheckout()}
+document.getElementById('headerSearch').addEventListener('input',e=>{const term=e.target.value.toLowerCase();document.querySelectorAll('.card').forEach(card=>{const name=card.dataset.name.toLowerCase();card.style.display=name.includes(term)?'block':'none'})})
+
+// ----- RENDER PRODUCTS -----
+function renderFeatured(){const grid=document.getElementById('featuredGrid');grid.innerHTML='';PRODUCTS.slice(0,6).forEach(p=>{const div=document.createElement('div');div.className='card';div.dataset.name=p.name;div.innerHTML=`<img src="${IMAGES[p.id]||PLACEHOLDER}" alt=""><h4>${p.name}</h4><div class="price">₹${p.price}</div><button onclick="addToCart(${p.id})">Add to Cart</button>`;grid.appendChild(div)});renderByCategory()}
+function renderByCategory(){const cats=['mobiles','makeup','laptops','watches','shoes'];cats.forEach(cat=>{const grid=document.getElementById(cat+'Grid');grid.innerHTML='';PRODUCTS.filter(p=>p.category.toLowerCase()===cat).forEach(p=>{const div=document.createElement('div');div.className='card';div.dataset.name=p.name;div.innerHTML=`<img src="${IMAGES[p.id]||PLACEHOLDER}" alt=""><h4>${p.name}</h4><div class="price">₹${p.price}</div><button onclick="addToCart(${p.id})">Add to Cart</button>`;grid.appendChild(div)})})}
+
+// ----- CART PAGE -----
+function renderCart(){const cart=getCart();const box=document.getElementById('cartBox');box.innerHTML='';let subtotal=0;cart.forEach(c=>{const p=PRODUCTS.find(x=>x.id===c.id);if(!p) return;const total=p.price*c.qty;subtotal+=total;const div=document.createElement('div');div.className='cart-item';div.innerHTML=`<img src="${IMAGES[p.id]||PLACEHOLDER}"><div style="flex:1"><h4>${p.name}</h4><div>₹${p.price} × ${c.qty} = ₹${total}</div><div class="qty-controls"><button class="smallbtn" onclick="changeQty(${p.id},-1)">-</button><button class="smallbtn" onclick="changeQty(${p.id},1)">+</button><button class="smallbtn" onclick="removeFromCart(${p.id})">Remove</button></div></div>`;box.appendChild(div)});document.getElementById('subtotal').innerText=subtotal;document.getElementById('totalGrand').innerText=subtotal;updateHeaderCount()}
+
+// ----- CHECKOUT -----
+function proceedToCheckout(){navTo('checkoutPage')}
+function renderCheckout(){const cart=getCart();const items=document.getElementById('orderItems');items.innerHTML='';let subtotal=0;cart.forEach(c=>{const p=PRODUCTS.find(x=>x.id===c.id);if(!p) return;const total=p.price*c.qty;subtotal+=total;items.innerHTML+=`<div>${p.name} × ${c.qty} = ₹${total}</div>`});document.getElementById('co_subtotal').innerText=subtotal;document.getElementById('co_total').innerText=subtotal}
+
+// ----- CHECKOUT FORM -----
+document.getElementById('checkoutForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  const fullname=document.getElementById('fullname').value;
+  const phone=document.getElementById('phone').value;
+  const address=document.getElementById('address').value;
+  const cart=getCart();
+  let total=0; cart.forEach(c=>{ const p=PRODUCTS.find(x=>x.id===c.id); if(p) total+=p.price*c.qty });
+  localStorage.setItem(ORDER_KEY,JSON.stringify({fullname,phone,address,total}));
+  localStorage.removeItem(CART_KEY);
+  updateHeaderCount();
+  navTo('successPage');
+  document.getElementById('orderSummary').innerHTML = `Total Amount: ₹${total}`;
+})
+
+// ----- INIT -----
+renderFeatured(); updateHeaderCount();
+</script>
+
+</body>
+</html>
